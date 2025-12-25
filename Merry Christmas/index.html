@@ -6,122 +6,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module"
-  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
-/* ---------- BASE ---------- */
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
   background: black;
-  overflow: hidden;
+  font-family: system-ui, sans-serif;
 }
 
-/* ---------- SNOW (VISIBLE IN CAMERA) ---------- */
-.snowflake {
-  position: fixed;
-  top: -10px;
+/* UI INSIDE AR */
+.ar-ui {
   color: white;
-  animation: fall linear infinite;
-  pointer-events: none;
-  z-index: 5;
-}
-@keyframes fall {
-  to { transform: translateY(110vh); }
-}
-
-/* ---------- LANDING ---------- */
-#landing {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle, #0b1d2a, #000);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   text-align: center;
-  z-index: 20;
-}
-
-button {
-  padding: 14px 28px;
-  border-radius: 30px;
-  border: none;
-  font-size: 17px;
-  background: crimson;
-  color: white;
-  cursor: pointer;
-}
-
-/* ---------- AR UI (INSIDE CAMERA) ---------- */
-#arUI {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
-  color: white;
-}
-
-#hint {
-  position: absolute;
-  top: 18px;
-  width: 100%;
-  text-align: center;
-  font-size: 1rem;
-  text-shadow: 0 0 10px black;
+  pointer-events: auto;
 }
 
 #message {
-  position: absolute;
-  bottom: 22%;
-  width: 100%;
-  text-align: center;
-  font-size: 1.5rem;
-  opacity: 0;
-  transition: 1s;
-  text-shadow: 0 0 15px black;
+  font-size: 1.4rem;
+  text-shadow: 0 0 10px black;
 }
 
-#capture {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  padding: 10px 16px;
+#giftBtn, #captureBtn {
+  margin-top: 10px;
+  padding: 10px 18px;
   border-radius: 20px;
-  background: gold;
-  color: black;
-  pointer-events: auto;
+  border: none;
+  background: crimson;
+  color: white;
+  font-size: 16px;
+}
+
+/* Snow */
+.snow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.snow span {
+  position: absolute;
+  color: white;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  to { transform: translateY(110vh); }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ❄️ Snow generator -->
-<script>
-for (let i = 0; i < 40; i++) {
-  const s = document.createElement("div");
-  s.className = "snowflake";
-  s.innerText = "❄";
-  s.style.left = Math.random() * 100 + "vw";
-  s.style.fontSize = 12 + Math.random() * 18 + "px";
-  s.style.animationDuration = 6 + Math.random() * 6 + "s";
-  document.body.appendChild(s);
-}
-</script>
-
-<!-- 🎄 LANDING -->
-<div id="landing">
-  <h1>🎄 Merry Christmas</h1>
-  <p id="wishText">Shivam wishes you joy & happiness ✨</p>
-  <button onclick="startAR()">🎁 View in AR</button>
-</div>
-
-<!-- 🎄 AR MODEL -->
 <model-viewer
-  id="tree"
+  id="ar"
   src="tree.glb"
   ar
   ar-modes="webxr scene-viewer quick-look"
@@ -129,69 +66,45 @@ for (let i = 0; i < 40; i++) {
   auto-rotate
   rotation-per-second="10deg"
   scale="2 2 2"
-  shadow-intensity="1">
+  shadow-intensity="1"
+  style="width:100vw; height:100vh;">
+
+  <!-- 🌨 SNOW SLOT -->
+  <div slot="poster" class="snow">
+    <span style="left:10%; animation-duration:7s;">❄</span>
+    <span style="left:40%; animation-duration:9s;">❄</span>
+    <span style="left:70%; animation-duration:8s;">❄</span>
+  </div>
+
+  <!-- 🎄 TEXT SLOT -->
+  <div slot="ar-status" class="ar-ui">
+    <div id="message">🎄 Merry Christmas from Shivam ✨</div>
+    <button id="giftBtn">🎁 Tap Gift</button><br>
+    <button id="captureBtn">📸 Capture</button>
+  </div>
+
 </model-viewer>
 
-<!-- 🎁 GIFT (SAME AR SPACE) -->
-<model-viewer
-  id="gift"
-  src="gift.glb"
-  ar
-  camera-controls
-  style="position:absolute; width:0; height:0;"
-  scale="0.8 0.8 0.8">
-</model-viewer>
-
-<!-- 📱 UI INSIDE CAMERA -->
-<div id="arUI">
-  <div id="hint">👉 Tap the 🎁 gift</div>
-  <div id="message">🎄 Merry Christmas from Shivam ✨</div>
-  <button id="capture" onclick="takeShot()">📸</button>
-</div>
-
-<!-- 🔊 AUDIO -->
-<audio id="bgm" src="music.mp3" loop></audio>
 <audio id="jingle" src="jingle.mp3"></audio>
 
 <script>
-const landing = document.getElementById("landing");
-const tree = document.getElementById("tree");
-const gift = document.getElementById("gift");
-const bgm = document.getElementById("bgm");
+const giftBtn = document.getElementById("giftBtn");
+const msg = document.getElementById("message");
 const jingle = document.getElementById("jingle");
-const message = document.getElementById("message");
 
-/* Name */
-const name = new URLSearchParams(location.search).get("name") || "you";
-document.getElementById("wishText").innerText =
-  `Shivam wishes ${name} a Merry Christmas 🎄`;
-
-/* Start AR */
-function startAR() {
-  landing.style.display = "none";
-  tree.activateAR();
-  bgm.play();
-
-  setTimeout(() => {
-    message.style.opacity = 1;
-  }, 1500);
-}
-
-/* Gift tap */
-gift.addEventListener("click", () => {
+giftBtn.onclick = () => {
   jingle.play();
-  message.innerText = "🎁 Surprise! May your holidays sparkle ✨";
-  message.style.opacity = 1;
-});
+  msg.innerText = "🎁 Surprise! Wishing you joy & happiness ✨";
+};
 
-/* Screenshot */
-async function takeShot() {
-  const blob = await tree.toBlob();
+document.getElementById("captureBtn").onclick = async () => {
+  const viewer = document.getElementById("ar");
+  const blob = await viewer.toBlob();
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "christmas-ar.png";
   a.click();
-}
+};
 </script>
 
 </body>
