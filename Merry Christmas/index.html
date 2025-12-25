@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🎄 Merry Christmas</title>
+<title>Merry Christmas 🎄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Model Viewer -->
@@ -11,14 +11,15 @@
 </script>
 
 <style>
+/* ---------- BASE ---------- */
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle, #0b1d2a, #000);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(circle at top, #123047, #000);
   color: white;
 }
 
-/* ---------- HERO ---------- */
+/* ---------- HERO SECTION ---------- */
 .hero {
   min-height: 100vh;
   display: flex;
@@ -26,17 +27,18 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 20px;
+  padding: 24px;
 }
 
 .hero h1 {
   font-size: 3rem;
-  text-shadow: 0 0 20px gold;
+  margin-bottom: 10px;
+  text-shadow: 0 0 25px gold;
 }
 
 .hero p {
   font-size: 1.2rem;
-  max-width: 500px;
+  max-width: 520px;
   opacity: 0.9;
 }
 
@@ -46,21 +48,28 @@ body {
 }
 
 /* ---------- BUTTON ---------- */
-button {
-  padding: 16px 34px;
+.ar-btn {
+  margin-top: 30px;
+  padding: 16px 36px;
   font-size: 18px;
-  border-radius: 30px;
+  border-radius: 40px;
   border: none;
-  background: crimson;
+  background: linear-gradient(135deg, crimson, red);
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 18px red;
+  box-shadow: 0 0 20px crimson;
 }
 
-.note {
-  margin-top: 15px;
+.ar-note {
+  margin-top: 14px;
   font-size: 0.9rem;
   opacity: 0.7;
+}
+
+/* ---------- HIDDEN MODEL VIEWER ---------- */
+model-viewer {
+  width: 0;
+  height: 0;
 }
 </style>
 </head>
@@ -69,39 +78,43 @@ button {
 
 <section class="hero">
   <h1>🎄 Merry Christmas</h1>
+
   <p id="wishText">
     Shivam wishes you a joyful Christmas filled with warmth, love, and happiness ✨
   </p>
 
-  <!-- Optional decorative image -->
-  <img src="christmas-bg.png" alt="Christmas Decoration">
+  <!-- Optional festive graphic -->
+  <!-- <img src="hero.png" alt="Christmas Decoration"> -->
 
-  <!-- AR Button -->
+  <!-- Hidden model-viewer for AR -->
   <model-viewer
+    id="arModel"
     src="tree.glb"
     ar
     ar-modes="scene-viewer quick-look"
     camera-controls
     auto-rotate
-    style="width:0;height:0;">
+    rotation-per-second="12deg">
   </model-viewer>
 
-  <button onclick="openAR()">🎁 View in AR</button>
+  <button class="ar-btn" onclick="openAR()">🎁 View in AR</button>
 
-  <div class="note">
-    Opens your phone camera • Move phone to place the tree • Tap capture 📸
+  <div class="ar-note">
+    Opens camera • Move phone to place tree • Tap capture 📸
   </div>
 </section>
 
 <script>
 /* Personalised name */
-const name = new URLSearchParams(location.search).get("name") || "you";
+const params = new URLSearchParams(window.location.search);
+const name = params.get("name") || "you";
+
 document.getElementById("wishText").innerText =
   `Shivam wishes ${name} a Merry Christmas 🎄`;
 
-/* Open native AR */
+/* Open native AR viewer */
 function openAR() {
-  document.querySelector("model-viewer").activateAR();
+  document.getElementById("arModel").activateAR();
 }
 </script>
 
