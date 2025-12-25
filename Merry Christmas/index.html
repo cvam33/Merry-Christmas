@@ -19,7 +19,7 @@ body {
   overflow: hidden;
 }
 
-/* ---------- SNOW OVERLAY ---------- */
+/* ---------- SNOW ---------- */
 .snowflake {
   position: fixed;
   top: -10px;
@@ -41,10 +41,7 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 20px;
-  z-index: 10;
 }
-
 button {
   margin-top: 25px;
   padding: 15px 32px;
@@ -63,60 +60,54 @@ button {
   width: 100vw;
   height: 100vh;
 }
-
 model-viewer {
   width: 100%;
   height: 100%;
 }
 
 /* ---------- AR TEXT ---------- */
-#instruction {
+#floatingText {
   position: absolute;
-  top: 20px;
+  top: 20%;
   width: 100%;
   text-align: center;
-  font-size: 1.1rem;
-  z-index: 10;
-  text-shadow: 0 0 10px black;
-}
-
-#surprise {
-  position: absolute;
-  bottom: 20%;
-  width: 100%;
-  text-align: center;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   opacity: 0;
-  transition: 1s;
+  transition: opacity 1s ease;
   z-index: 10;
+  text-shadow: 0 0 15px gold;
 }
 
-/* ---------- SCREENSHOT ---------- */
-#shot {
+/* ---------- BLINKING LIGHTS ---------- */
+#lights {
   position: absolute;
-  bottom: 25px;
-  right: 20px;
-  padding: 10px 16px;
-  border-radius: 20px;
-  background: gold;
-  color: black;
-  border: none;
-  z-index: 10;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background:
+    radial-gradient(circle at 30% 55%, rgba(255,0,0,.7), transparent 40%),
+    radial-gradient(circle at 60% 45%, rgba(0,255,0,.7), transparent 40%),
+    radial-gradient(circle at 50% 35%, rgba(255,255,0,.7), transparent 40%);
+  animation: blink 1.2s infinite alternate;
+}
+@keyframes blink {
+  from { opacity: 0.2; }
+  to { opacity: 0.7; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ❄️ SNOW -->
+<!-- ❄️ Snow -->
 <script>
-for (let i = 0; i < 45; i++) {
+for (let i = 0; i < 50; i++) {
   const s = document.createElement("div");
   s.className = "snowflake";
   s.innerHTML = "❄";
   s.style.left = Math.random() * 100 + "vw";
   s.style.fontSize = 12 + Math.random() * 18 + "px";
-  s.style.animationDuration = 5 + Math.random() * 6 + "s";
+  s.style.animationDuration = 6 + Math.random() * 6 + "s";
   document.body.appendChild(s);
 }
 </script>
@@ -124,23 +115,36 @@ for (let i = 0; i < 45; i++) {
 <!-- 🎄 LANDING -->
 <div id="landing">
   <h1>🎄 Merry Christmas</h1>
-  <p id="wishText">Shivam wishes you a joyful Christmas ✨</p>
+  <p id="wishText">Shivam wishes you a Merry Christmas ✨</p>
   <button onclick="startAR()">🎁 View in AR</button>
 </div>
 
-<!-- 🎁 AR -->
+<!-- 🎁 AR VIEW -->
 <div id="ar">
-  <div id="instruction">👉 Move your phone & tap the 🎁 gift</div>
-  <div id="surprise">🎁 Surprise! May your holidays sparkle ✨</div>
-  <button id="shot" onclick="takeShot()">📸</button>
+  <div id="lights"></div>
+  <div id="floatingText">🎄 Merry Christmas ✨</div>
 
-  <model-viewer id="model"
+  <!-- Tree -->
+  <model-viewer
+    id="tree"
     src="tree.glb"
     ar
     ar-modes="webxr scene-viewer quick-look"
     camera-controls
-    shadow-intensity="1"
-    scale="2 2 2">
+    auto-rotate
+    rotation-per-second="12deg"
+    scale="2 2 2"
+    shadow-intensity="1">
+  </model-viewer>
+
+  <!-- Gift -->
+  <model-viewer
+    id="gift"
+    src="gift.glb"
+    ar
+    camera-controls
+    style="position:absolute; width:0; height:0;"
+    scale="0.8 0.8 0.8">
   </model-viewer>
 </div>
 
@@ -151,12 +155,13 @@ for (let i = 0; i < 45; i++) {
 <script>
 const landing = document.getElementById("landing");
 const ar = document.getElementById("ar");
-const model = document.getElementById("model");
+const tree = document.getElementById("tree");
+const gift = document.getElementById("gift");
 const bgm = document.getElementById("bgm");
 const jingle = document.getElementById("jingle");
-const surprise = document.getElementById("surprise");
+const text = document.getElementById("floatingText");
 
-/* Personal name */
+/* Name */
 const name = new URLSearchParams(location.search).get("name") || "you";
 document.getElementById("wishText").innerText =
   `Shivam wishes ${name} a Merry Christmas 🎄`;
@@ -165,32 +170,20 @@ document.getElementById("wishText").innerText =
 function startAR() {
   landing.style.display = "none";
   ar.style.display = "block";
-  model.activateAR();
+  tree.activateAR();
   bgm.play();
+
+  setTimeout(() => {
+    text.style.opacity = 1;
+  }, 1500);
 }
 
-/* Tap gift (tree for now) */
-model.addEventListener("click", () => {
+/* Gift tap */
+gift.addEventListener("click", () => {
   jingle.play();
-  surprise.style.opacity = 1;
-
-  model.animate(
-    [
-      { transform: "scale(2) rotateY(0deg)" },
-      { transform: "scale(2.4) rotateY(360deg)" }
-    ],
-    { duration: 1200, easing: "ease-out" }
-  );
+  text.innerText = "🎁 Surprise! Wishing you joy & happiness ✨";
+  text.style.opacity = 1;
 });
-
-/* Screenshot */
-async function takeShot() {
-  const blob = await model.toBlob();
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "christmas-ar.png";
-  a.click();
-}
 </script>
 
 </body>
