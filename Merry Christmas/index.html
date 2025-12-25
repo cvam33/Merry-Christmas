@@ -5,106 +5,104 @@
 <title>🎄 Merry Christmas</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Model Viewer -->
 <script type="module"
- src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
 body {
   margin: 0;
-  background: black;
-  font-family: system-ui, sans-serif;
-}
-
-/* UI INSIDE AR */
-.ar-ui {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle, #0b1d2a, #000);
   color: white;
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  pointer-events: auto;
+  padding: 20px;
 }
 
-#message {
-  font-size: 1.4rem;
-  text-shadow: 0 0 10px black;
+.hero h1 {
+  font-size: 3rem;
+  text-shadow: 0 0 20px gold;
 }
 
-#giftBtn, #captureBtn {
-  margin-top: 10px;
-  padding: 10px 18px;
-  border-radius: 20px;
+.hero p {
+  font-size: 1.2rem;
+  max-width: 500px;
+  opacity: 0.9;
+}
+
+.hero img {
+  width: 220px;
+  margin: 30px 0;
+}
+
+/* ---------- BUTTON ---------- */
+button {
+  padding: 16px 34px;
+  font-size: 18px;
+  border-radius: 30px;
   border: none;
   background: crimson;
   color: white;
-  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 18px red;
 }
 
-/* Snow */
-.snow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.snow span {
-  position: absolute;
-  color: white;
-  animation: fall linear infinite;
-}
-@keyframes fall {
-  to { transform: translateY(110vh); }
+.note {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  opacity: 0.7;
 }
 </style>
 </head>
 
 <body>
 
-<model-viewer
-  id="ar"
-  src="tree.glb"
-  ar
-  ar-modes="webxr scene-viewer quick-look"
-  camera-controls
-  auto-rotate
-  rotation-per-second="10deg"
-  scale="2 2 2"
-  shadow-intensity="1"
-  style="width:100vw; height:100vh;">
+<section class="hero">
+  <h1>🎄 Merry Christmas</h1>
+  <p id="wishText">
+    Shivam wishes you a joyful Christmas filled with warmth, love, and happiness ✨
+  </p>
 
-  <!-- 🌨 SNOW SLOT -->
-  <div slot="poster" class="snow">
-    <span style="left:10%; animation-duration:7s;">❄</span>
-    <span style="left:40%; animation-duration:9s;">❄</span>
-    <span style="left:70%; animation-duration:8s;">❄</span>
+  <!-- Optional decorative image -->
+  <img src="christmas-bg.png" alt="Christmas Decoration">
+
+  <!-- AR Button -->
+  <model-viewer
+    src="tree.glb"
+    ar
+    ar-modes="scene-viewer quick-look"
+    camera-controls
+    auto-rotate
+    style="width:0;height:0;">
+  </model-viewer>
+
+  <button onclick="openAR()">🎁 View in AR</button>
+
+  <div class="note">
+    Opens your phone camera • Move phone to place the tree • Tap capture 📸
   </div>
-
-  <!-- 🎄 TEXT SLOT -->
-  <div slot="ar-status" class="ar-ui">
-    <div id="message">🎄 Merry Christmas from Shivam ✨</div>
-    <button id="giftBtn">🎁 Tap Gift</button><br>
-    <button id="captureBtn">📸 Capture</button>
-  </div>
-
-</model-viewer>
-
-<audio id="jingle" src="jingle.mp3"></audio>
+</section>
 
 <script>
-const giftBtn = document.getElementById("giftBtn");
-const msg = document.getElementById("message");
-const jingle = document.getElementById("jingle");
+/* Personalised name */
+const name = new URLSearchParams(location.search).get("name") || "you";
+document.getElementById("wishText").innerText =
+  `Shivam wishes ${name} a Merry Christmas 🎄`;
 
-giftBtn.onclick = () => {
-  jingle.play();
-  msg.innerText = "🎁 Surprise! Wishing you joy & happiness ✨";
-};
-
-document.getElementById("captureBtn").onclick = async () => {
-  const viewer = document.getElementById("ar");
-  const blob = await viewer.toBlob();
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "christmas-ar.png";
-  a.click();
-};
+/* Open native AR */
+function openAR() {
+  document.querySelector("model-viewer").activateAR();
+}
 </script>
 
 </body>
