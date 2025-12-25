@@ -12,112 +12,115 @@
 <style>
 body {
   margin: 0;
-  overflow: hidden;
-  background: radial-gradient(circle, #0b1d2a, #000);
   font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle, #0b1d2a, #000);
   color: white;
+  text-align: center;
 }
 
-/* UI */
-#ui {
-  position: absolute;
-  top: 20px;
-  width: 100%;
-  text-align: center;
-  z-index: 10;
+/* Landing Screen */
+#landing {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
 h1 {
-  font-size: 2.3rem;
+  font-size: 2.5rem;
   text-shadow: 0 0 20px gold;
 }
 
 p {
   font-size: 1.2rem;
+  margin: 10px 0 30px;
 }
 
-/* Snow (CSS based – WORKS) */
-.snow {
-  position: fixed;
-  top: -10px;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background-image:
-    radial-gradient(2px 2px at 20px 30px, white, transparent),
-    radial-gradient(2px 2px at 100px 150px, white, transparent),
-    radial-gradient(2px 2px at 200px 80px, white, transparent);
-  animation: snow 10s linear infinite;
+button {
+  background: crimson;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255,0,0,0.6);
 }
 
-@keyframes snow {
-  from { transform: translateY(0); }
-  to { transform: translateY(100vh); }
+/* AR Screen */
+#arScreen {
+  display: none;
 }
 
-/* Message */
-#message {
-  position: absolute;
-  bottom: 15%;
-  width: 100%;
-  text-align: center;
-  font-size: 1.5rem;
-  opacity: 0;
-  transition: 1s;
-}
-
-/* AR */
 model-viewer {
   width: 100vw;
   height: 100vh;
+}
+
+/* Hint */
+#hint {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  font-size: 1rem;
+  opacity: 0.8;
 }
 </style>
 </head>
 
 <body>
 
-<div class="snow"></div>
-
-<div id="ui">
+<!-- LANDING PAGE -->
+<div id="landing">
   <h1>🎄 Merry Christmas</h1>
-  <p id="wish">Shivam wishes you joy ✨</p>
-  <p><small>👉 Tap the tree 🎁</small></p>
+  <p id="wishText">Shivam wishes you joy & happiness ✨</p>
+  <button onclick="startAR()">🎁 View in AR</button>
 </div>
 
-<div id="message">🎁 Surprise! May your holidays sparkle ✨</div>
+<!-- AR VIEW -->
+<div id="arScreen">
+  <model-viewer
+    id="tree"
+    src="tree.glb"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    auto-rotate
+    shadow-intensity="1">
+  </model-viewer>
 
-<!-- AR Tree -->
-<model-viewer
-  id="tree"
-  src="tree.glb"
-  ar
-  ar-modes="webxr scene-viewer quick-look"
-  camera-controls
-  auto-rotate
-  shadow-intensity="1"
-></model-viewer>
+  <div id="hint">👉 Tap the tree 🎁</div>
+</div>
 
 <!-- Sounds -->
 <audio id="bgm" src="music.mp3" loop></audio>
 <audio id="jingle" src="jingle.mp3"></audio>
 
 <script>
+const landing = document.getElementById("landing");
+const arScreen = document.getElementById("arScreen");
 const tree = document.getElementById("tree");
 const bgm = document.getElementById("bgm");
 const jingle = document.getElementById("jingle");
-const msg = document.getElementById("message");
 
-/* Name */
+/* Personalised name */
 const name = new URLSearchParams(location.search).get("name") || "Friend";
-document.getElementById("wish").innerText =
-  `Shivam wishes ${name} joy & happiness ✨`;
+document.getElementById("wishText").innerText =
+  `Shivam wishes ${name} a Merry Christmas 🎄`;
 
-/* USER TAP = EVERYTHING STARTS */
+/* Start AR (USER INTERACTION ✔️) */
+function startAR() {
+  landing.style.display = "none";
+  arScreen.style.display = "block";
+  tree.activateAR();
+  bgm.play();
+}
+
+/* Tap tree */
 tree.addEventListener("click", () => {
-  bgm.play();          // ✅ Allowed
-  jingle.play();       // ✅ Allowed
-  msg.style.opacity = 1;
-
+  jingle.play();
   tree.animate(
     [
       { transform: "scale(1) rotateY(0deg)" },
