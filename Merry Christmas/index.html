@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🎄 Merry Christmas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="module"
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: radial-gradient(circle, #0b1d2a, #000);
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+}
+
+#ui {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+  animation: fadeIn 2s ease;
+}
+
+h1 {
+  font-size: 2.4rem;
+  text-shadow: 0 0 25px gold;
+}
+
+p {
+  font-size: 1.2rem;
+  opacity: 0.95;
+}
+
+#message {
+  position: absolute;
+  bottom: 15%;
+  width: 100%;
+  text-align: center;
+  font-size: 1.6rem;
+  opacity: 0;
+  transition: 1s ease;
+  text-shadow: 0 0 15px red;
+}
+
+#screenshotBtn {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  padding: 12px 18px;
+  font-size: 16px;
+  border-radius: 25px;
+  border: none;
+  background: crimson;
+  color: white;
+  z-index: 20;
+  cursor: pointer;
+}
+
+model-viewer {
+  width: 100vw;
+  height: 100vh;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<!-- UI -->
+<div id="ui">
+  <h1>🎄 Merry Christmas</h1>
+  <p id="wishText">Shivam wishes you joy & happiness ✨</p>
+</div>
+
+<div id="message">🎁 Surprise! May your holidays sparkle ❄️</div>
+
+<button id="screenshotBtn">📸 Screenshot</button>
+
+<!-- Snow -->
+<a-scene embedded>
+  <a-entity particle-system="
+    preset: snow;
+    particleCount: 1600;
+    size: 0.7;
+    velocityValue: 0 -0.4 0;">
+  </a-entity>
+</a-scene>
+
+<!-- AR Model -->
+<model-viewer
+  id="arModel"
+  src="tree.glb"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  exposure="1"
+  shadow-intensity="1"
+  style="position:absolute; top:0;">
+</model-viewer>
+
+<!-- Sounds -->
+<audio id="music" src="music.mp3" loop></audio>
+<audio id="jingle" src="jingle.mp3"></audio>
+
+<script>
+const model = document.getElementById("arModel");
+const music = document.getElementById("music");
+const jingle = document.getElementById("jingle");
+const msg = document.getElementById("message");
+
+/* Auto-start AR */
+model.addEventListener("load", () => {
+  model.activateAR();
+  music.play();
+});
+
+/* Personalised name */
+const params = new URLSearchParams(window.location.search);
+const name = params.get("name") || "Friend";
+document.getElementById("wishText").innerText =
+  `Shivam wishes ${name} joy & happiness ✨`;
+
+/* Gift tap → animation + jingle */
+model.addEventListener("click", () => {
+  jingle.play();
+  msg.style.opacity = 1;
+
+  model.animate(
+    [{ transform: 'scale(1) rotateY(0deg)' },
+     { transform: 'scale(1.2) rotateY(360deg)' }],
+    { duration: 1200, easing: 'ease-out' }
+  );
+});
+
+/* Screenshot */
+document.getElementById("screenshotBtn").onclick = async () => {
+  const blob = await model.toBlob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "christmas-ar.png";
+  a.click();
+};
+</script>
+
+</body>
+</html>
