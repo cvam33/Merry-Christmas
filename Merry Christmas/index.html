@@ -6,25 +6,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module"
- src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
 /* ---------- BASE ---------- */
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle, #0b1d2a, #000);
-  color: white;
+  font-family: system-ui, sans-serif;
+  background: black;
   overflow: hidden;
 }
 
-/* ---------- SNOW ---------- */
+/* ---------- SNOW (VISIBLE IN CAMERA) ---------- */
 .snowflake {
   position: fixed;
   top: -10px;
   color: white;
-  font-size: 1em;
   animation: fall linear infinite;
   pointer-events: none;
   z-index: 5;
@@ -35,76 +33,78 @@ body {
 
 /* ---------- LANDING ---------- */
 #landing {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #0b1d2a, #000);
+  color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
+  z-index: 20;
 }
+
 button {
-  margin-top: 25px;
-  padding: 15px 32px;
-  font-size: 18px;
+  padding: 14px 28px;
   border-radius: 30px;
   border: none;
+  font-size: 17px;
   background: crimson;
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 15px red;
 }
 
-/* ---------- AR ---------- */
-#ar {
-  display: none;
-  width: 100vw;
-  height: 100vh;
-}
-model-viewer {
-  width: 100%;
-  height: 100%;
-}
-
-/* ---------- AR TEXT ---------- */
-#floatingText {
-  position: absolute;
-  top: 20%;
-  width: 100%;
-  text-align: center;
-  font-size: 1.7rem;
-  opacity: 0;
-  transition: opacity 1s ease;
-  z-index: 10;
-  text-shadow: 0 0 15px gold;
-}
-
-/* ---------- BLINKING LIGHTS ---------- */
-#lights {
-  position: absolute;
+/* ---------- AR UI (INSIDE CAMERA) ---------- */
+#arUI {
+  position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 6;
-  background:
-    radial-gradient(circle at 30% 55%, rgba(255,0,0,.7), transparent 40%),
-    radial-gradient(circle at 60% 45%, rgba(0,255,0,.7), transparent 40%),
-    radial-gradient(circle at 50% 35%, rgba(255,255,0,.7), transparent 40%);
-  animation: blink 1.2s infinite alternate;
+  z-index: 10;
+  color: white;
 }
-@keyframes blink {
-  from { opacity: 0.2; }
-  to { opacity: 0.7; }
+
+#hint {
+  position: absolute;
+  top: 18px;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  text-shadow: 0 0 10px black;
+}
+
+#message {
+  position: absolute;
+  bottom: 22%;
+  width: 100%;
+  text-align: center;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: 1s;
+  text-shadow: 0 0 15px black;
+}
+
+#capture {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: gold;
+  color: black;
+  pointer-events: auto;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ❄️ Snow -->
+<!-- ❄️ Snow generator -->
 <script>
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 40; i++) {
   const s = document.createElement("div");
   s.className = "snowflake";
-  s.innerHTML = "❄";
+  s.innerText = "❄";
   s.style.left = Math.random() * 100 + "vw";
   s.style.fontSize = 12 + Math.random() * 18 + "px";
   s.style.animationDuration = 6 + Math.random() * 6 + "s";
@@ -115,37 +115,38 @@ for (let i = 0; i < 50; i++) {
 <!-- 🎄 LANDING -->
 <div id="landing">
   <h1>🎄 Merry Christmas</h1>
-  <p id="wishText">Shivam wishes you a Merry Christmas ✨</p>
+  <p id="wishText">Shivam wishes you joy & happiness ✨</p>
   <button onclick="startAR()">🎁 View in AR</button>
 </div>
 
-<!-- 🎁 AR VIEW -->
-<div id="ar">
-  <div id="lights"></div>
-  <div id="floatingText">🎄 Merry Christmas ✨</div>
+<!-- 🎄 AR MODEL -->
+<model-viewer
+  id="tree"
+  src="tree.glb"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  camera-controls
+  auto-rotate
+  rotation-per-second="10deg"
+  scale="2 2 2"
+  shadow-intensity="1">
+</model-viewer>
 
-  <!-- Tree -->
-  <model-viewer
-    id="tree"
-    src="tree.glb"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    camera-controls
-    auto-rotate
-    rotation-per-second="12deg"
-    scale="2 2 2"
-    shadow-intensity="1">
-  </model-viewer>
+<!-- 🎁 GIFT (SAME AR SPACE) -->
+<model-viewer
+  id="gift"
+  src="gift.glb"
+  ar
+  camera-controls
+  style="position:absolute; width:0; height:0;"
+  scale="0.8 0.8 0.8">
+</model-viewer>
 
-  <!-- Gift -->
-  <model-viewer
-    id="gift"
-    src="gift.glb"
-    ar
-    camera-controls
-    style="position:absolute; width:0; height:0;"
-    scale="0.8 0.8 0.8">
-  </model-viewer>
+<!-- 📱 UI INSIDE CAMERA -->
+<div id="arUI">
+  <div id="hint">👉 Tap the 🎁 gift</div>
+  <div id="message">🎄 Merry Christmas from Shivam ✨</div>
+  <button id="capture" onclick="takeShot()">📸</button>
 </div>
 
 <!-- 🔊 AUDIO -->
@@ -154,12 +155,11 @@ for (let i = 0; i < 50; i++) {
 
 <script>
 const landing = document.getElementById("landing");
-const ar = document.getElementById("ar");
 const tree = document.getElementById("tree");
 const gift = document.getElementById("gift");
 const bgm = document.getElementById("bgm");
 const jingle = document.getElementById("jingle");
-const text = document.getElementById("floatingText");
+const message = document.getElementById("message");
 
 /* Name */
 const name = new URLSearchParams(location.search).get("name") || "you";
@@ -169,21 +169,29 @@ document.getElementById("wishText").innerText =
 /* Start AR */
 function startAR() {
   landing.style.display = "none";
-  ar.style.display = "block";
   tree.activateAR();
   bgm.play();
 
   setTimeout(() => {
-    text.style.opacity = 1;
+    message.style.opacity = 1;
   }, 1500);
 }
 
 /* Gift tap */
 gift.addEventListener("click", () => {
   jingle.play();
-  text.innerText = "🎁 Surprise! Wishing you joy & happiness ✨";
-  text.style.opacity = 1;
+  message.innerText = "🎁 Surprise! May your holidays sparkle ✨";
+  message.style.opacity = 1;
 });
+
+/* Screenshot */
+async function takeShot() {
+  const blob = await tree.toBlob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "christmas-ar.png";
+  a.click();
+}
 </script>
 
 </body>
